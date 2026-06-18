@@ -1,4 +1,4 @@
-package com.example.videostreamingapp;
+package io.github.sauravnaruka.videostreamingapp;
 
 import org.junit.jupiter.api.Test;
 

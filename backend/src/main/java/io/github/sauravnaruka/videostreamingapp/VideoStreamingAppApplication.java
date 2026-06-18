@@ -1,4 +1,4 @@
-package com.example.videostreamingapp;
+package io.github.sauravnaruka.videostreamingapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
