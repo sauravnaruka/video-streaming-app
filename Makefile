@@ -1,7 +1,9 @@
 FRONTEND_DIR=frontend
 BACKEND_DIR=backend
 
-.PHONY: dev frontend backend build clean install test test-frontend test-backend setup format format-frontend format-backend
+IMAGE_NAME=video-streaming-app
+
+.PHONY: dev frontend backend build clean install test test-frontend test-backend setup format format-frontend format-backend docker-build docker-run
 
 dev:
 	$(MAKE) -j2 frontend backend
@@ -41,3 +43,9 @@ format-frontend:
 
 format-backend:
 	cd $(BACKEND_DIR) && ./mvnw spotless:apply
+
+docker-build:
+	docker build -t $(IMAGE_NAME):latest .
+
+docker-run:
+	docker run --rm -p 8080:8080 $(IMAGE_NAME):latest

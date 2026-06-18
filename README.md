@@ -46,6 +46,21 @@ make dev
 
 Spring Boot starts with the debugger attached — set breakpoints anywhere in `backend/src/` and they will hit normally. Run the frontend separately in a terminal with `make frontend`.
 
+## Docker
+
+Build a production image (frontend embedded in the backend JAR, served from port 8080):
+
+```bash
+make docker-build
+```
+
+Run it locally:
+```bash
+make docker-run
+```
+
+Then open `http://localhost:8080`. The multi-stage build handles the frontend and backend automatically — no local Node or Java install required.
+
 ## Commands
 
 | Command | Description |
