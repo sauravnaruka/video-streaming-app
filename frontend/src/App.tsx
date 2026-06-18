@@ -1,11 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+type HealthStatus = { status: string; version: string }
+
 function App() {
   const [count, setCount] = useState(0)
+  const [health, setHealth] = useState<HealthStatus | null>(null)
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then((res) => res.json())
+      .then(setHealth)
+      .catch(() => setHealth({ status: 'UNREACHABLE', version: '' }))
+  }, [])
 
   return (
     <>
@@ -16,6 +26,10 @@ function App() {
           <img src={viteLogo} className="vite" alt="Vite logo" />
         </div>
         <div>
+          <p>
+            Backend:{' '}
+            {health ? `${health.status} (v${health.version})` : 'connecting…'}
+          </p>
           <h1>Get started</h1>
           <p>
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>

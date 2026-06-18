@@ -19,6 +19,33 @@ React + Spring Boot video streaming application.
    make setup
    ```
 
+## Local Development
+
+Run frontend and backend in separate terminals:
+
+```bash
+# Terminal 1 — Spring Boot on http://localhost:8080
+make backend
+
+# Terminal 2 — Vite on http://localhost:5173
+make frontend
+```
+
+Open `http://localhost:5173`. Vite automatically proxies `/api` requests to the backend, so no CORS configuration is needed.
+
+To start both with a single command:
+```bash
+make dev
+```
+
+### Debugging the backend in VS Code
+
+1. Open the **Run and Debug** panel (`Ctrl+Shift+D`)
+2. Select **Debug Backend** from the dropdown
+3. Press **F5**
+
+Spring Boot starts with the debugger attached — set breakpoints anywhere in `backend/src/` and they will hit normally. Run the frontend separately in a terminal with `make frontend`.
+
 ## Commands
 
 | Command | Description |
@@ -53,7 +80,7 @@ cd frontend && npm run test:ui
 |---|---|
 | `make format` | Format all code |
 | `make format-frontend` | Run Prettier on frontend |
-| `make format-backend` | Run Google Java Format via Spotless |
+| `make format-backend` | Run Eclipse JDT formatter via Spotless |
 
 The pre-commit git hook runs formatting automatically on staged files.
 Install it once after cloning with `make setup`.
