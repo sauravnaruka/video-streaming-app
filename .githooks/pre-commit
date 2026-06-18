@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+STAGED_JAVA=$(git diff --cached --name-only --diff-filter=ACM | grep '\.java$' || true)
+STAGED_FRONTEND=$(git diff --cached --name-only --diff-filter=ACM | grep '^frontend/.*\.\(ts\|tsx\|js\|jsx\|json\|css\)$' || true)
+
+if [ -n "$STAGED_JAVA" ]; then
+  echo "Formatting Java files..."
+  (cd backend && ./mvnw spotless:apply -q)
+  git add $STAGED_JAVA
+fi
+
+if [ -n "$STAGED_FRONTEND" ]; then
+  echo "Formatting frontend files..."
+  RELATIVE=$(echo "$STAGED_FRONTEND" | sed 's|^frontend/||')
+  (cd frontend && npx prettier --write $RELATIVE)
+  git add $STAGED_FRONTEND
+fi
