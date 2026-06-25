@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run tests with coverage
+        run: npm test -- --run --coverage
+        working-directory: frontend
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          echo "## Frontend Coverage" >> $GITHUB_STEP_SUMMARY
+          node -e "
+            const s = require('./frontend/coverage/coverage-summary.json').total;
+            const fmt = n => n.pct.toFixed(1) + '%';
+            console.log('| Metric | Coverage |');
+            console.log('|--------|----------|');
+            console.log(\`| Statements | \${fmt(s.statements)} |\`);
+            console.log(\`| Lines      | \${fmt(s.lines)} |\`);
+            console.log(\`| Functions  | \${fmt(s.functions)} |\`);
+            console.log(\`| Branches   | \${fmt(s.branches)} |\`);
+          " >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: temurin
+          cache: maven
+
+      - name: Cache Maven wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/wrapper
+          key: maven-wrapper-${{ hashFiles('backend/.mvn/wrapper/maven-wrapper.properties') }}
+
+      - name: Run tests with coverage
+        run: ./mvnw test -q
+        working-directory: backend
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          echo "## Backend Coverage" >> $GITHUB_STEP_SUMMARY
+          REPORT=backend/target/site/jacoco/jacoco.xml
+          if [ -f "$REPORT" ]; then
+            node -e "
+              const fs = require('fs');
+              const xml = fs.readFileSync('$REPORT', 'utf8');
+              const parse = (type) => {
+                const m = xml.match(new RegExp(\`<counter type=\"\${type}\" missed=\"(\\\\d+)\" covered=\"(\\\\d+)\"\`));
+                if (!m) return 'n/a';
+                const [, missed, covered] = m.map(Number);
+                const total = missed + covered;
+                return total ? ((covered / total) * 100).toFixed(1) + '%' : 'n/a';
+              };
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log(\`| Lines      | \${parse('LINE')} |\`);
+              console.log(\`| Branches   | \${parse('BRANCH')} |\`);
+              console.log(\`| Methods    | \${parse('METHOD')} |\`);
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: backend/target/site/jacoco/
